@@ -8,6 +8,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class ACaptureProjectile;
 
 UCLASS()
 class CAPTURECREATURES_API APlayerCharacter : public ACharacter
@@ -22,7 +23,6 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-
 	// カメラ
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* CameraBoom;
@@ -40,7 +40,28 @@ private:
 	UPROPERTY(EditAnywhere)
 	UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere)
+	UInputAction* ShootAction;
+
+	UPROPERTY(EditAnywhere)
+	UInputAction* CaptureAction;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<ACaptureProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	float ProjectileSpeed = 2000.0f;
+
+	// キャプチャモード（true = 網、false = 通常弾）
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon", meta=(AllowPrivateAccess="true"))
+	bool bCaptureMode = false;
+
 	// 関数
 	void Move(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
+	void Shoot(const struct FInputActionValue& Value);
+	void Capture(const struct FInputActionValue& Value);
+
+	//ヘルパー関数。
+	void SpawnProjectile();
 };
