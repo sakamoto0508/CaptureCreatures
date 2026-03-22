@@ -49,6 +49,7 @@ void ACaptureProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+/// <summary>/ 発射処理。方向と速度を受け取り、ProjectileMovementComponentに設定する。</summary>
 void ACaptureProjectile::Launch(FVector Direction, float Speed)
 {
 	if (ProjectileMovement)
@@ -71,6 +72,7 @@ void ACaptureProjectile::Launch(FVector Direction, float Speed)
 	}
 }
 
+/// <summary>/ 衝突処理。現在はデバッグ出力のみ。将来的には敵の捕獲処理をここに実装予定。</summary>
 void ACaptureProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {

@@ -39,6 +39,7 @@ protected:
 	float LifeSpan = 10.0f;
 
 	// 衝突時の処理
+	//渡された引数は、衝突したコンポーネント、衝突したアクター、衝突したコンポーネント、衝突の法線インパルス、および衝突の詳細を含むHitResult構造体です。
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	           FVector NormalImpulse, const FHitResult& Hit);

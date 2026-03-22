@@ -29,7 +29,8 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	// Enhanced Inputのマッピングコンテキストを追加。
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -40,6 +41,7 @@ void APlayerCharacter::BeginPlay()
 	}
 }
 
+// 入力バインディング。
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -52,6 +54,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 }
 
+// 移動とカメラ操作の関数。
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -69,6 +72,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
+//Look関数は、コントローラーの入力に基づいてキャラクターの視点を回転させます。
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
 	FVector2D LookAxis = Value.Get<FVector2D>();
@@ -85,6 +89,9 @@ void APlayerCharacter::Shoot(const struct FInputActionValue& Value)
 	SpawnProjectile();
 }
 
+/// <summary>
+/// Captureアクションの処理。現在はデバッグ出力のみ。
+/// </summary
 void APlayerCharacter::Capture(const struct FInputActionValue& Value)
 {
 	if (Controller != nullptr)
@@ -101,7 +108,8 @@ void APlayerCharacter::Capture(const struct FInputActionValue& Value)
 	}
 }
 
-void APlayerCharacter::SpawnProjectile()  // ← 新規追加関数
+/// <summary>/ Projectileをスポーンして発射する関数。Shootアクションから呼び出される。</summary>
+void APlayerCharacter::SpawnProjectile()
 {
 	// ProjectileClassが設定されているか確認
 	if (!ProjectileClass)
@@ -126,9 +134,9 @@ void APlayerCharacter::SpawnProjectile()  // ← 新規追加関数
 
 	// アクターをスポーン
 	ACaptureProjectile* Projectile = GetWorld()->SpawnActor<ACaptureProjectile>(
-		ProjectileClass,
-		SpawnLocation,
-		FRotator::ZeroRotator
+		ProjectileClass,	//どのクラス
+		SpawnLocation,	//どこに
+		FRotator::ZeroRotator	//どう向いて
 	);
 
 	if (Projectile)
