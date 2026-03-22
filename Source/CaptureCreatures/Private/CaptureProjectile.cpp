@@ -5,7 +5,7 @@
 // Sets default values
 ACaptureProjectile::ACaptureProjectile()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	//コリジョンコンポーネントをルートに設定。
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
@@ -19,13 +19,19 @@ ACaptureProjectile::ACaptureProjectile()
 	//移動コンポーネント。
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	ProjectileMovement->SetUpdatedComponent(CollisionComponent);
-	ProjectileMovement->InitialSpeed = 2000.0f;
-	ProjectileMovement->MaxSpeed = 2000.0f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 
 	// デフォルト設定。
 	bIsCaptureMode = false;
+
+	ApplyTunableSettings();
+}
+
+void ACaptureProjectile::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	ApplyTunableSettings();
 }
 
 // Called when the game starts or when spawned
@@ -39,8 +45,10 @@ void ACaptureProjectile::BeginPlay()
 		CollisionComponent->OnComponentHit.AddDynamic(this, &ACaptureProjectile::OnHit);
 	}
 
+	ApplyTunableSettings();
+
 	// ライフスパン後に自動削除。
-	SetLifeSpan(LifeSpan);
+	SetLifeSpan(ProjectileLifeSpan);
 }
 
 // Called every frame
@@ -49,8 +57,8 @@ void ACaptureProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-/// <summary>/ 発射処理。方向と速度を受け取り、ProjectileMovementComponentに設定する。</summary>
-void ACaptureProjectile::Launch(FVector Direction, float Speed)
+/// <summary>/ 発射処理。方向を受け取り、弾側の速度設定でProjectileMovementComponentに設定する。</summary>
+void ACaptureProjectile::Launch(FVector Direction)
 {
 	if (ProjectileMovement)
 	{
@@ -58,7 +66,7 @@ void ACaptureProjectile::Launch(FVector Direction, float Speed)
 		Direction.Normalize();
 
 		// 速度を設定
-		ProjectileMovement->Velocity = Direction * Speed;
+		ProjectileMovement->Velocity = Direction * ProjectileInitialSpeed;
 
 		if (GEngine)
 		{
@@ -69,6 +77,21 @@ void ACaptureProjectile::Launch(FVector Direction, float Speed)
 				FString::Printf(TEXT("Projectile launched! Mode: %s"), bIsCaptureMode ? TEXT("CAPTURE") : TEXT("DAMAGE"))
 			);
 		}
+	}
+}
+
+/// <summary>/ Tunableな設定をコンポーネントに適用する関数。ConstructionScriptとBeginPlayで呼び出される。</summary>
+void ACaptureProjectile::ApplyTunableSettings()
+{
+	if (CollisionComponent)
+	{
+		CollisionComponent->InitSphereRadius(CollisionRadius);
+	}
+
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->InitialSpeed = ProjectileInitialSpeed;
+		ProjectileMovement->MaxSpeed = ProjectileMaxSpeed;
 	}
 }
 

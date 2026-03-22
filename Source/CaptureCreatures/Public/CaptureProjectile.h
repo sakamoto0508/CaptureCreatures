@@ -14,12 +14,13 @@ class CAPTURECREATURES_API ACaptureProjectile : public AActor
 
 public:
 	ACaptureProjectile();
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	// 発射処理
-	void Launch(FVector Direction, float Speed);
+	// 発射処理（速度は弾側の設定値を使用）
+	void Launch(FVector Direction);
 
 	// キャプチャモードフラグ
 	UPROPERTY(BlueprintReadWrite, Category = "Capture")
@@ -34,9 +35,23 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
 	UProjectileMovementComponent* ProjectileMovement;
 
-	//ライフスパン（秒）
-	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
-	float LifeSpan = 10.0f;
+	// BPで調整する弾の半径
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile|Tuning")
+	float CollisionRadius = 5.0f;
+
+	// BPで調整する初速
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile|Tuning")
+	float ProjectileInitialSpeed = 2000.0f;
+
+	// BPで調整する最高速度
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile|Tuning")
+	float ProjectileMaxSpeed = 2000.0f;
+
+	// BPで調整するライフスパン（秒）
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile|Tuning")
+	float ProjectileLifeSpan = 10.0f;
+
+	void ApplyTunableSettings();
 
 	// 衝突時の処理
 	//渡された引数は、衝突したコンポーネント、衝突したアクター、衝突したコンポーネント、衝突の法線インパルス、および衝突の詳細を含むHitResult構造体です。

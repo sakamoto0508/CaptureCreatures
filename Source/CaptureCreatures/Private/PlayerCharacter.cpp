@@ -4,7 +4,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Controller.h"
-#include "CaptureProjectile.h" 
+#include "CaptureProjectile.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -29,7 +29,7 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// Enhanced Inputのマッピングコンテキストを追加。
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -90,25 +90,28 @@ void APlayerCharacter::Shoot(const struct FInputActionValue& Value)
 }
 
 /// <summary>
-/// Captureアクションの処理。現在はデバッグ出力のみ。
-/// </summary
+/// Captureアクションの処理。押すたびに捕獲モードを切り替える。
+/// </summary>
 void APlayerCharacter::Capture(const struct FInputActionValue& Value)
 {
-	if (Controller != nullptr)
+	//押した瞬間にトグル（true/false反転）。
+	bCaptureMode = !bCaptureMode;
+
+	// 画面表示で現在モードを確認。
+	if (GEngine)
 	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1, // ID（-1で毎回新規）
-				5.0f, // 表示時間
-				FColor::Red,
-				TEXT("Capture")
-			);
-		}
+		const FString ModeText = bCaptureMode ? TEXT("CAPTURE MODE: ON") : TEXT("CAPTURE MODE: OFF");
+
+		GEngine->AddOnScreenDebugMessage(
+			1, // 固定ID: 同じ行を更新。
+			1.5f, // 表示時間。
+			bCaptureMode ? FColor::Cyan : FColor::White,
+			ModeText
+		);
 	}
 }
 
-/// <summary>/ Projectileをスポーンして発射する関数。Shootアクションから呼び出される。</summary>
+/// <summary>/ Projectileをスポーンして、プレイヤー正面方向へ発射する関数。Shootアクションから呼び出される。</summary>
 void APlayerCharacter::SpawnProjectile()
 {
 	// ProjectileClassが設定されているか確認
@@ -126,17 +129,15 @@ void APlayerCharacter::SpawnProjectile()
 		return;
 	}
 
-	// スポーン位置: カメラから少し前方
-	FVector SpawnLocation = FollowCamera->GetComponentLocation() + FollowCamera->GetForwardVector() * 100.0f;
-
-	// スポーン方向: カメラの前方
-	FVector LaunchDirection = FollowCamera->GetForwardVector();
+	// スポーン位置と発射方向はプレイヤー正面基準にする
+	const FVector LaunchDirection = GetActorForwardVector();
+	const FVector SpawnLocation = GetActorLocation() + LaunchDirection * 100.0f + FVector(0.0f, 0.0f, 50.0f);
 
 	// アクターをスポーン
 	ACaptureProjectile* Projectile = GetWorld()->SpawnActor<ACaptureProjectile>(
-		ProjectileClass,	//どのクラス
-		SpawnLocation,	//どこに
-		FRotator::ZeroRotator	//どう向いて
+		ProjectileClass, //どのクラス
+		SpawnLocation, //どこに
+		LaunchDirection.Rotation() //どう向いて
 	);
 
 	if (Projectile)
@@ -145,6 +146,6 @@ void APlayerCharacter::SpawnProjectile()
 		Projectile->bIsCaptureMode = bCaptureMode;
 
 		// 発射処理
-		Projectile->Launch(LaunchDirection, ProjectileSpeed);
+		Projectile->Launch(LaunchDirection);
 	}
 }

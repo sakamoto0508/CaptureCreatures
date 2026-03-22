@@ -46,11 +46,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	UInputAction* CaptureAction;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<ACaptureProjectile> ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-	float ProjectileSpeed = 2000.0f;
 
 	// キャプチャモード（true = 網、false = 通常弾）
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon", meta=(AllowPrivateAccess="true"))
