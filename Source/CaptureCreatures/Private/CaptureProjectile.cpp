@@ -1,6 +1,7 @@
 #include "CaptureProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "TempEnemy.h"
 
 // Sets default values
 ACaptureProjectile::ACaptureProjectile()
@@ -102,6 +103,11 @@ void ACaptureProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 	// 自分自身との衝突は無視。
 	if (OtherActor && OtherActor != this && OtherComp)
 	{
+		if (ATempEnemy* HitEnemy = Cast<ATempEnemy>(OtherActor))
+		{
+			HitEnemy->NotifyHitByProjectile(bIsCaptureMode, DamageAmount);
+		}
+
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(
@@ -112,8 +118,6 @@ void ACaptureProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 			);
 		}
 
-		// TODO: ここに敵の捕獲処理を実装
-		// とりあえず衝突確認用にデバッグ出力
 
 		// 弾は衝突後、少ししてから消える（または即削除）
 		Destroy();

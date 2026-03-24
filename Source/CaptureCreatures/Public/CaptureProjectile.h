@@ -51,6 +51,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile|Tuning")
 	float ProjectileLifeSpan = 10.0f;
 
+	// BPで調整するダメージ量
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile|Combat")
+	float DamageAmount = 10.0f;
+
 	void ApplyTunableSettings();
 
 	// 衝突時の処理
