@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
 #include "GameFramework/Actor.h"
 #include "TempEnemy.generated.h"
 
@@ -26,6 +27,10 @@ public:
 	bool IsCaptured() const { return bCaptured; }
 
 protected:
+	UFUNCTION()
+	void OnCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse, const FHitResult& Hit);
+
 	// C++で所有する当たり判定。サイズや見た目合わせはBP子クラスで調整する。
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Enemy")
 	USphereComponent* CollisionComponent;
@@ -41,6 +46,10 @@ protected:
 	// BPで調整するコリジョンプロファイル名（例: Pawn, BlockAllDynamic）
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy|Collision")
 	FName CollisionProfileName = TEXT("Pawn");
+
+	// BPで調整するObject Type。Collision Preset適用後に最終的に上書きする。
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy|Collision")
+	TEnumAsByte<ECollisionChannel> CollisionObjectType = ECC_Pawn;
 
 	/// <summary>/ BPで調整する最大HP。捕獲条件やダメージ処理に使用する予定。</summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy|Stats")

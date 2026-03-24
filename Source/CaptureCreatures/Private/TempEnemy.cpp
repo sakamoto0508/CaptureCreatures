@@ -11,6 +11,7 @@ ATempEnemy::ATempEnemy()
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Block);
+	CollisionComponent->SetNotifyRigidBodyCollision(true);
 	RootComponent = CollisionComponent;
 
 	// 見た目（詳細な見た目調整はBPで実施）
@@ -34,6 +35,30 @@ void ATempEnemy::BeginPlay()
 	CurrentHP = MaxHP;
 	bCaptured = false;
 	ApplyTunableSettings();
+
+	if (CollisionComponent)
+	{
+		CollisionComponent->OnComponentHit.AddDynamic(this, &ATempEnemy::OnCollisionHit);
+	}
+}
+
+void ATempEnemy::OnCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                                FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (!OtherActor || OtherActor == this)
+	{
+		return;
+	}
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			1.5f,
+			FColor::Cyan,
+			FString::Printf(TEXT("Enemy Collision Hit: %s"), *OtherActor->GetName())
+		);
+	}
 }
 
 void ATempEnemy::ApplyTunableSettings()
@@ -45,13 +70,34 @@ void ATempEnemy::ApplyTunableSettings()
 
 	CollisionComponent->SetSphereRadius(CollisionRadius);
 	CollisionComponent->SetCollisionProfileName(CollisionProfileName);
+	CollisionComponent->SetCollisionObjectType(CollisionObjectType);
 }
 
 /// <summary>/ Projectileから呼び出される関数。捕獲モードかどうかと、ダメージ量を受け取る。</summary>
 void ATempEnemy::NotifyHitByProjectile(bool bCaptureMode, float DamageAmount)
 {
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			2.0f,
+			FColor::Red,
+			FString::Printf(
+				TEXT("Enemy hit! CaptureMode: %s, EnemyHP: %.1f"), bCaptureMode ? TEXT("ON") : TEXT("OFF"), CurrentHP)
+		);
+	}
+
 	if (bCaptured)
 	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				1.5f,
+				FColor::Blue,
+				TEXT("Already captured, no effect.")
+			);
+		}
 		return;
 	}
 
