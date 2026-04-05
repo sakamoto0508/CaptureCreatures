@@ -29,7 +29,7 @@ public:
 protected:
 	UFUNCTION()
 	void OnCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-		FVector NormalImpulse, const FHitResult& Hit);
+	                    FVector NormalImpulse, const FHitResult& Hit);
 
 	// C++で所有する当たり判定。サイズや見た目合わせはBP子クラスで調整する。
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Enemy")
@@ -55,11 +55,23 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy|Stats")
 	float MaxHP = 30.0f;
 
-	/// <summary>/ 現在のHP。Projectileからのダメージ処理で減少させる予定。HPが0以下になったら捕獲成功とする予定。</summary>
+	/// <summary>/ 現在のHP。</summary>
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Enemy|Stats")
 	float CurrentHP = 30.0f;
 
-	/// <summary>/ 捕獲状態フラグ。Projectileからの処理で捕獲成功したらtrueにする予定。捕獲後はダメージ無効化などの処理もここで制御する予定。</summary>
+	/// <summary>/ BPで調整する捕獲可能HP割合。現在のHPがこの割合以下のときに捕獲可能になる予定。</summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ENemy|Capture", meta=(ClampMin="0.0", ClampMax="1.0"))
+	float CaptureAllowedHpRatio = 0.5f;
+
+	/// <summary>/ BPで調整する基本捕獲成功率。捕獲可能HP割合以下のときにこの確率で捕獲成功になる予定。</summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Enemy|Capture", meta=(ClampMin="0.0", ClampMax="1.0"))
+	float BaseCaptureChance = 0.35f;
+
+	/// <summary>/ BPで調整する低HP捕獲ボーナス。現在のHPが捕獲可能HP割合の半分以下のときに、基本捕獲成功率にこの値を加算する予定。</summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Enemy|Capture", meta=(ClampMin="0.0", ClampMax="1.0"))
+	float LowHpCaptureBonus = 0.55f;
+
+	/// <summary>/ 捕獲状態フラグ。</summary>
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Enemy|State")
 	bool bCaptured = false;
 
