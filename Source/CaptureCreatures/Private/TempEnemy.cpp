@@ -61,6 +61,79 @@ void ATempEnemy::OnCollisionHit(UPrimitiveComponent* HitComponent, AActor* Other
 	}
 }
 
+/// <summary>/ 捕獲成功率を計算する関数。現在のHPと最大HP、BPで調整する基本捕獲成功率と低HP捕獲ボーナスを使用して計算する。</summary>
+float ATempEnemy::CalculateCaptureChance() const
+{
+	if (MaxHP <= KINDA_SMALL_NUMBER)
+	{
+		return 0.0f;
+	}
+
+	const float HpRatio = FMath::Clamp(CurrentHP / MaxHP, 0.0f, 1.0f);
+	const float MissingHpRatio = 1.0f - HpRatio;
+
+	return FMath::Clamp(BaseCaptureChance + (MissingHpRatio * LowHpCaptureBonus), 0.0f, 1.0f);
+}
+
+bool ATempEnemy::TryCaptureByChance()
+{
+	if (MaxHP <= KINDA_SMALL_NUMBER)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TryCaptureByChance called but MaxHP is zero or negative."));
+		return false;
+	}
+
+	const float HpRatio = FMath::Clamp(CurrentHP / MaxHP, 0.0f, 1.0f);
+
+	if (HpRatio > CaptureAllowedHpRatio)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				1.5f,
+				FColor::Red,
+				FString::Printf(
+					TEXT("Capture failed: HP ratio %.2f is above the allowed threshold %.2f."), HpRatio,
+					CaptureAllowedHpRatio)
+			);
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("Capture failed by HP gate on %s. HpRatio=%.2f Gate=%.2f"),
+		       *GetName(), HpRatio, CaptureAllowedHpRatio);
+		return false;
+	}
+
+	const float CaptureChance = CalculateCaptureChance();
+	const float Roll = FMath::FRandRange(0.0f, 1.0f);
+	const bool bSuccess = Roll <= CaptureChance;
+
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			1.8f,
+			bSuccess ? FColor::Green : FColor::Red,
+			FString::Printf(TEXT("Capture roll: %.2f / %.2f (%s)"),
+			                Roll,
+			                CaptureChance,
+			                bSuccess ? TEXT("SUCCESS") : TEXT("FAIL"))
+		);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Capture roll on %s. HpRatio=%.2f Chance=%.2f Roll=%.2f Result=%s"),
+	       *GetName(), HpRatio, CaptureChance, Roll, bSuccess ? TEXT("SUCCESS") : TEXT("FAIL"));
+
+	if (bSuccess)
+	{
+		Capture();
+		return true;
+	}
+
+	return false;
+}
+
 void ATempEnemy::ApplyTunableSettings()
 {
 	if (!CollisionComponent)
@@ -103,7 +176,7 @@ void ATempEnemy::NotifyHitByProjectile(bool bCaptureMode, float DamageAmount)
 
 	if (bCaptureMode)
 	{
-		Capture();
+		TryCaptureByChance();
 		return;
 	}
 

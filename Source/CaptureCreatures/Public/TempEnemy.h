@@ -76,5 +76,7 @@ protected:
 	bool bCaptured = false;
 
 	void ApplyTunableSettings();
+	float CalculateCaptureChance() const;
+	bool TryCaptureByChance();
 	void Capture();
 };
